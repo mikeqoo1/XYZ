@@ -50,6 +50,9 @@ func main() {
 	合併檔案(out, pvc)
 	EMST成交, _ := os.Open("檔案6") //emst成交回報
 	合併檔案(out, EMST成交)
+	EMST委託, _ := os.Open("檔案7") //emst委託回報
+	合併檔案(out, EMST委託)
+
 	out.Close()
 
 	//這邊要重新開檔 因為上面我只設定寫的權限 func NewScanner 要讀
@@ -76,8 +79,11 @@ func main() {
 				temp.ttime = fileScanner.Text()[25:34]
 				temp.data = "8988 |" + fileScanner.Text()
 			}
-		} else if len(fileScanner.Text()) == 108 {
+		} else if len(fileScanner.Text()) == 108 { //emst成交
 			temp.ttime = fileScanner.Text()[75:84]
+			temp.data = "55688|" + fileScanner.Text()
+		} else if len(fileScanner.Text()) == 162 { //emst委託
+			temp.ttime = fileScanner.Text()[71:80]
 			temp.data = "55688|" + fileScanner.Text()
 		} else if strings.Contains(fileScanner.Text(), "order") { //Ben
 			temp.ttime = fileScanner.Text()[0:12]
@@ -97,12 +103,15 @@ func main() {
 			temp.ttime = strings.ReplaceAll(temp.ttime, ".", "")
 			ooo := strings.Split(fileScanner.Text(), ",")
 			if ooo[1] == "fix下單" {
-				temp.data = "55688|" + ooo[2]
+				//temp.data = "55688|" + ooo[2]
 			} else if ooo[1] == "fix回報" {
-				temp.data = "55688|" + ooo[3]
+				temp.data = "55689|" + ooo[3]
 			} else {
-				temp.data = "55688|" + ooo[2]
+				temp.data = "55690|" + ooo[2]
 			}
+		} else if len(fileScanner.Text()) > 100 && fileScanner.Text()[84:85] == "E" {
+			temp.data = "風控Error|" + fileScanner.Text()
+			fmt.Println(temp.data)
 		} else { //price
 			temp.ttime = fileScanner.Text()[11:19]
 			temp.ttime = strings.ReplaceAll(temp.ttime, ":", "") + "000"
@@ -123,7 +132,7 @@ func main() {
 	write, _ := os.OpenFile("End/OnePiece.txt", os.O_CREATE|os.O_WRONLY, 0755)
 	defer write.Close()
 	for i := 0; i < len(All); i++ {
-		if All[i].data == "" {
+		if All[i].data == "" || strings.Contains(All[i].data, "風控Error") {
 			//不寫檔
 		} else {
 			write.Write([]byte(All[i].data + "\n"))
