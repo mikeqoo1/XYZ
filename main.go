@@ -38,14 +38,18 @@ func main() {
 		fmt.Println("Error when opening file:", err)
 	}
 
-	EMSTorder1, _ := os.Open("檔案1")
+	EMSTorder1, _ := os.Open("檔案1") //emst order
 	合併檔案(out, EMSTorder1)
-	EMSTorder2, _ := os.Open("檔案2")
+	EMSTorder2, _ := os.Open("檔案2") //emst order
 	合併檔案(out, EMSTorder2)
-	EMST基本價, _ := os.Open("檔案3")
+	EMST基本價, _ := os.Open("檔案3") //c67
 	合併檔案(out, EMST基本價)
-	ben, _ := os.Open("檔案4")
+	ben, _ := os.Open("檔案4") // ben order
 	合併檔案(out, ben)
+	pvc, _ := os.Open("檔案5") //pvc log
+	合併檔案(out, pvc)
+	EMST成交, _ := os.Open("檔案6") //emst成交回報
+	合併檔案(out, EMST成交)
 	out.Close()
 
 	//這邊要重新開檔 因為上面我只設定寫的權限 func NewScanner 要讀
@@ -60,7 +64,7 @@ func main() {
 		if strings.Contains(fileScanner.Text(), "stock_id") {
 			temp.ttime = "000000000"
 			temp.data = ""
-		} else if len(fileScanner.Text()) == 120 { //紀錄電檔案1文長度120(emst)
+		} else if len(fileScanner.Text()) == 120 { //紀錄電檔案1文長度120(emst)下單
 			動作別 := fileScanner.Text()[10:11]
 			if 動作別 == "I" {
 				temp.ttime = fileScanner.Text()[26:35]
@@ -72,6 +76,9 @@ func main() {
 				temp.ttime = fileScanner.Text()[25:34]
 				temp.data = "8988 |" + fileScanner.Text()
 			}
+		} else if len(fileScanner.Text()) == 108 {
+			temp.ttime = fileScanner.Text()[75:84]
+			temp.data = "55688|" + fileScanner.Text()
 		} else if strings.Contains(fileScanner.Text(), "order") { //Ben
 			temp.ttime = fileScanner.Text()[0:12]
 			temp.ttime = strings.ReplaceAll(temp.ttime, ":", "")
@@ -83,6 +90,18 @@ func main() {
 				temp.data = "13334|" + "\x01" + qqq[3]
 			} else {
 				temp.data = "13335|" + "\x01" + qqq[3]
+			}
+		} else if strings.Contains(fileScanner.Text(), "fix") || strings.Contains(fileScanner.Text(), "tmp") {
+			temp.ttime = fileScanner.Text()[0:12]
+			temp.ttime = strings.ReplaceAll(temp.ttime, ":", "")
+			temp.ttime = strings.ReplaceAll(temp.ttime, ".", "")
+			ooo := strings.Split(fileScanner.Text(), ",")
+			if ooo[1] == "fix下單" {
+				temp.data = "55688|" + ooo[2]
+			} else if ooo[1] == "fix回報" {
+				temp.data = "55688|" + ooo[3]
+			} else {
+				temp.data = "55688|" + ooo[2]
 			}
 		} else { //price
 			temp.ttime = fileScanner.Text()[11:19]
