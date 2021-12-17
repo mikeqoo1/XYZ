@@ -70,14 +70,17 @@ func main() {
 		} else if len(fileScanner.Text()) == 120 { //紀錄電檔案1文長度120(emst)下單
 			動作別 := fileScanner.Text()[10:11]
 			if 動作別 == "I" {
-				temp.ttime = fileScanner.Text()[26:35]
-				temp.data = "8988 |" + fileScanner.Text()
+				//temp.ttime = fileScanner.Text()[26:35]
+				temp.ttime = fileScanner.Text()[26:28] + ":" + fileScanner.Text()[28:30] + ":" + fileScanner.Text()[30:32] + "." + fileScanner.Text()[32:35]
+				temp.data = "8988 |" + temp.ttime + "|" + fileScanner.Text()
 			} else if 動作別 == "C" || 動作別 == "P" {
-				temp.ttime = fileScanner.Text()[25:34]
-				temp.data = "8988 |" + fileScanner.Text()
+				//fmt.Println(fileScanner.Text()[25:34])
+				temp.ttime = fileScanner.Text()[25:27] + ":" + fileScanner.Text()[27:29] + ":" + fileScanner.Text()[29:31] + "." + fileScanner.Text()[31:34]
+				temp.data = "8988 |" + temp.ttime + "|" + fileScanner.Text()
 			} else if 動作別 == "D" {
-				temp.ttime = fileScanner.Text()[25:34]
-				temp.data = "8988 |" + fileScanner.Text()
+				//temp.ttime = fileScanner.Text()[25:34]
+				temp.ttime = fileScanner.Text()[25:27] + ":" + fileScanner.Text()[27:29] + ":" + fileScanner.Text()[29:31] + "." + fileScanner.Text()[31:34]
+				temp.data = "8988 |" + temp.ttime + "|" + fileScanner.Text()
 			}
 		} else if len(fileScanner.Text()) == 108 { //emst成交
 			temp.ttime = fileScanner.Text()[75:84]
@@ -86,36 +89,33 @@ func main() {
 			temp.ttime = fileScanner.Text()[71:80]
 			temp.data = "55688|" + fileScanner.Text()
 		} else if strings.Contains(fileScanner.Text(), "order") { //Ben
-			temp.ttime = fileScanner.Text()[0:12]
-			temp.ttime = strings.ReplaceAll(temp.ttime, ":", "")
-			temp.ttime = strings.ReplaceAll(temp.ttime, ".", "")
 			qqq := strings.Split(fileScanner.Text(), ",")
+			temp.ttime = qqq[0]
 			if qqq[2] == "1t" {
-				temp.data = "3333 |" + "\x01" + qqq[3]
+				temp.data = "3333 |" + temp.ttime + "|" + "\x01" + qqq[3]
 			} else if qqq[2] == "1s" {
-				temp.data = "13334|" + "\x01" + qqq[3]
+				temp.data = "13334|" + temp.ttime + "|" + "\x01" + qqq[3]
 			} else {
-				temp.data = "13335|" + "\x01" + qqq[3]
+				temp.data = "13335|" + temp.ttime + "|" + "\x01" + qqq[3]
 			}
-		} else if strings.Contains(fileScanner.Text(), "fix") || strings.Contains(fileScanner.Text(), "tmp") {
-			temp.ttime = fileScanner.Text()[0:12]
-			temp.ttime = strings.ReplaceAll(temp.ttime, ":", "")
-			temp.ttime = strings.ReplaceAll(temp.ttime, ".", "")
+		} else if strings.Contains(fileScanner.Text(), "FIX.4.4") || strings.Contains(fileScanner.Text(), "TMP_") {
 			ooo := strings.Split(fileScanner.Text(), ",")
+			temp.ttime = ooo[0]
 			if ooo[1] == "fix下單" {
 				//temp.data = "55688|" + ooo[2]
-			} else if ooo[1] == "fix回報" {
-				temp.data = "55689|" + ooo[3]
-			} else {
-				temp.data = "55690|" + ooo[2]
+			} else if ooo[1] == "FIX_O" || ooo[1] == "FIX_T" {
+				temp.data = "55689|" + temp.ttime + "|" + ooo[2]
+				temp.data = strings.ReplaceAll(temp.data, "body為:", "")
+			} else if ooo[1] == "TMP_O" || ooo[1] == "TMP_T" {
+				temp.data = "55690|" + temp.ttime + "|" + ooo[2]
 			}
 		} else if len(fileScanner.Text()) > 100 && fileScanner.Text()[84:85] == "E" {
 			temp.data = "風控Error|" + fileScanner.Text()
 			fmt.Println(temp.data)
 		} else { //price
 			temp.ttime = fileScanner.Text()[11:19]
-			temp.ttime = strings.ReplaceAll(temp.ttime, ":", "") + "000"
-			temp.data = "8986 |" + fileScanner.Text()
+			temp.ttime = temp.ttime + "000"
+			temp.data = "8986 |" + temp.ttime + "|" + fileScanner.Text()
 		}
 		All = append(All, temp)
 	}
