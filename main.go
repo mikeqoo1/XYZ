@@ -83,10 +83,10 @@ func main() {
 				temp.data = "8988 |" + temp.ttime + "|" + fileScanner.Text()
 			}
 		} else if len(fileScanner.Text()) == 108 { //emst成交
-			temp.ttime = fileScanner.Text()[75:84]
+			temp.ttime = fileScanner.Text()[75:77] + ":" + fileScanner.Text()[77:79] + ":" + fileScanner.Text()[79:81] + "." + fileScanner.Text()[81:84]
 			temp.data = "55688|" + temp.ttime + "|" + fileScanner.Text()
 		} else if len(fileScanner.Text()) == 162 { //emst委託
-			temp.ttime = fileScanner.Text()[71:80]
+			temp.ttime = fileScanner.Text()[71:73] + ":" + fileScanner.Text()[73:75] + ":" + fileScanner.Text()[75:77] + "." + fileScanner.Text()[77:80]
 			temp.data = "55688|" + temp.ttime + "|" + fileScanner.Text()
 		} else if strings.Contains(fileScanner.Text(), "order") { //Ben
 			qqq := strings.Split(fileScanner.Text(), ",")
