@@ -12,13 +12,20 @@ import (
 type 原始資料 struct {
 	ttime string
 	data  string
+	流口水號  string
 }
 
 type 原始資料List []原始資料
 
-func (c 原始資料List) Len() int           { return len(c) }
-func (c 原始資料List) Swap(i, j int)      { c[i], c[j] = c[j], c[i] }
-func (c 原始資料List) Less(i, j int) bool { return c[i].ttime < c[j].ttime } // 小到大排序
+func (c 原始資料List) Len() int      { return len(c) }
+func (c 原始資料List) Swap(i, j int) { c[i], c[j] = c[j], c[i] }
+func (c 原始資料List) Less(i, j int) bool {
+	if c[i].ttime == c[j].ttime {
+		return c[i].流口水號 < c[j].流口水號
+	} else {
+		return c[i].ttime < c[j].ttime
+	}
+} // 小到大排序
 
 func 合併檔案(newfile *os.File, oldfile *os.File) {
 	n, err := io.Copy(newfile, oldfile)
@@ -101,10 +108,15 @@ func main() {
 		} else if strings.Contains(fileScanner.Text(), "FIX.4.4") || strings.Contains(fileScanner.Text(), "TMP_") {
 			ooo := strings.Split(fileScanner.Text(), ",")
 			temp.ttime = ooo[0]
-			if ooo[1] == "fix下單" {
-				//temp.data = "55688|" + ooo[2]
-			} else if ooo[1] == "FIX_O" || ooo[1] == "FIX_T" {
-				temp.data = "55689|" + temp.ttime + "|" + ooo[2]
+			if ooo[1] == "FIX_O" || ooo[1] == "FIX_T" {
+				長度 := len(ooo[2])
+				www := strings.Split(ooo[2], "\x01")
+				for i := 0; i < len(www); i++ {
+					if strings.Contains(www[i], "34=") {
+						temp.流口水號 = www[i][3:]
+					}
+				}
+				temp.data = "55689|" + temp.ttime + "|" + ooo[2][:長度-8]
 				temp.data = strings.ReplaceAll(temp.data, "body為:", "")
 			} else if ooo[1] == "TMP_O" || ooo[1] == "TMP_T" {
 				temp.data = "55690|" + temp.ttime + "|" + ooo[2]
