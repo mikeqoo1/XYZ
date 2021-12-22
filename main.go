@@ -39,31 +39,31 @@ func main() {
 	/*排序:https://segmentfault.com/a/1190000008062661*/
 
 	// open the file
-	out, err := os.OpenFile("AllData.txt", os.O_CREATE|os.O_WRONLY, 0755)
+	out, err := os.OpenFile("File/AllData.txt", os.O_CREATE|os.O_WRONLY, 0755)
 	//handle errors while opening
 	if err != nil {
 		fmt.Println("Error when opening file:", err)
 	}
 
-	EMSTorder1, _ := os.Open("檔案1") //emst order
+	EMSTorder1, _ := os.Open("File/檔案1") //emst order
 	合併檔案(out, EMSTorder1)
-	EMSTorder2, _ := os.Open("檔案2") //emst order
+	EMSTorder2, _ := os.Open("File/檔案2") //emst order
 	合併檔案(out, EMSTorder2)
-	EMST基本價, _ := os.Open("檔案3") //c67
+	EMST基本價, _ := os.Open("File/檔案3") //c67
 	合併檔案(out, EMST基本價)
-	ben, _ := os.Open("檔案4") // ben order
+	ben, _ := os.Open("File/檔案4") // ben order
 	合併檔案(out, ben)
-	pvc, _ := os.Open("檔案5") //pvc log
+	pvc, _ := os.Open("File/檔案5") //pvc log
 	合併檔案(out, pvc)
-	EMST成交, _ := os.Open("檔案6") //emst成交回報
+	EMST成交, _ := os.Open("File/檔案6") //emst成交回報
 	合併檔案(out, EMST成交)
-	EMST委託, _ := os.Open("檔案7") //emst委託回報
+	EMST委託, _ := os.Open("File/檔案7") //emst委託回報
 	合併檔案(out, EMST委託)
 
 	out.Close()
 
 	//這邊要重新開檔 因為上面我只設定寫的權限 func NewScanner 要讀
-	file, _ := os.Open("AllData.txt")
+	file, _ := os.Open("File/AllData.txt")
 	defer file.Close()
 
 	fileScanner := bufio.NewScanner(file)
