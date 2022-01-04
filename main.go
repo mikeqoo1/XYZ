@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -59,7 +60,8 @@ func main() {
 	合併檔案(out, EMST成交)
 	EMST委託, _ := os.Open("File/檔案7") //emst委託回報
 	合併檔案(out, EMST委託)
-
+	Want, _ := os.Open("File/wamt.log")
+	合併檔案(out, Want)
 	out.Close()
 
 	//這邊要重新開檔 因為上面我只設定寫的權限 func NewScanner 要讀
@@ -90,10 +92,38 @@ func main() {
 				temp.data = "8988 |" + temp.ttime + "|" + fileScanner.Text()
 			}
 		} else if len(fileScanner.Text()) == 108 { //emst成交
-			temp.ttime = fileScanner.Text()[75:77] + ":" + fileScanner.Text()[77:79] + ":" + fileScanner.Text()[79:81] + "." + fileScanner.Text()[81:84]
+			mm := fileScanner.Text()[79:81]
+			sss := fileScanner.Text()[81:84]
+			i, _ := strconv.Atoi(mm)
+			i = i + 2
+			if i >= 60 {
+				mm = fileScanner.Text()[75:77]
+				sss = "999"
+			} else {
+				mm = strconv.Itoa(i)
+				if len(mm) < 2 {
+					mm = "0" + mm
+				}
+				sss = "000"
+			}
+			temp.ttime = fileScanner.Text()[75:77] + ":" + fileScanner.Text()[77:79] + ":" + mm + "." + sss
 			temp.data = "55688|" + temp.ttime + "|" + fileScanner.Text()
 		} else if len(fileScanner.Text()) == 162 { //emst委託
-			temp.ttime = fileScanner.Text()[71:73] + ":" + fileScanner.Text()[73:75] + ":" + fileScanner.Text()[75:77] + "." + fileScanner.Text()[77:80]
+			mm := fileScanner.Text()[75:77]
+			sss := fileScanner.Text()[77:80]
+			i, _ := strconv.Atoi(mm)
+			i = i + 1
+			if i >= 60 {
+				mm = fileScanner.Text()[75:77]
+				sss = "999"
+			} else {
+				mm = strconv.Itoa(i)
+				if len(mm) < 2 {
+					mm = "0" + mm
+				}
+				sss = "000"
+			}
+			temp.ttime = fileScanner.Text()[71:73] + ":" + fileScanner.Text()[73:75] + ":" + mm + "." + sss
 			temp.data = "55688|" + temp.ttime + "|" + fileScanner.Text()
 		} else if strings.Contains(fileScanner.Text(), "order") { //Ben
 			qqq := strings.Split(fileScanner.Text(), ",")
@@ -116,14 +146,56 @@ func main() {
 						temp.流口水號 = www[i][3:]
 					}
 				}
+				mm := temp.ttime[6:8]
+				sss := temp.ttime[9:]
+				i, _ := strconv.Atoi(mm)
+				i = i + 1
+				if i >= 60 {
+					mm = temp.ttime[6:8]
+					sss = "999"
+				} else {
+					mm = strconv.Itoa(i)
+					if len(mm) < 2 {
+						mm = "0" + mm
+					}
+					sss = temp.ttime[9:]
+				}
+				temp.ttime = temp.ttime[0:5] + ":" + mm + "." + sss
 				temp.data = "55689|" + temp.ttime + "|" + ooo[2][:長度-8]
 				temp.data = strings.ReplaceAll(temp.data, "body為:", "")
 			} else if ooo[1] == "TMP_O" || ooo[1] == "TMP_T" {
+				mm := temp.ttime[6:8]
+				sss := temp.ttime[9:]
+				i, _ := strconv.Atoi(mm)
+				i = i + 2
+				if i >= 60 {
+					mm = temp.ttime[6:8]
+					sss = "999"
+				} else {
+					mm = strconv.Itoa(i)
+					if len(mm) < 2 {
+						mm = "0" + mm
+					}
+					sss = temp.ttime[9:]
+				}
+				temp.ttime = temp.ttime[0:5] + ":" + mm + "." + sss
 				temp.data = "55690|" + temp.ttime + "|" + ooo[2]
 			}
 		} else if len(fileScanner.Text()) > 100 && fileScanner.Text()[84:85] == "E" {
 			temp.data = "風控Error|" + fileScanner.Text()
 			fmt.Println(temp.data)
+		} else if strings.Contains(fileScanner.Text(), "WAMT") {
+			ooo := strings.Split(fileScanner.Text(), ",")
+			temp.ttime = ooo[0][9:] + ".000"
+			a := strings.Index(fileScanner.Text(), "'")
+			//fmt.Println(strings.Index(fileScanner.Text(), "'"))
+			b := strings.LastIndex(fileScanner.Text(), "'")
+			//fmt.Println(strings.LastIndex(fileScanner.Text(), "'"))
+			ddd := fileScanner.Text()[a+1 : b]
+			//fmt.Println(fileScanner.Text()[a:b])
+			temp.data = "3306 |" + temp.ttime + "|" + ddd
+			//fmt.Println(temp.ttime)
+			//fmt.Println(temp.data)
 		} else { //price
 			temp.ttime = fileScanner.Text()[11:19]
 			temp.ttime = temp.ttime + ".000"
