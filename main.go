@@ -92,38 +92,58 @@ func main() {
 				temp.data = "8988 |" + temp.ttime + "|" + fileScanner.Text()
 			}
 		} else if len(fileScanner.Text()) == 108 { //emst成交
-			mm := fileScanner.Text()[79:81]
+			HH := fileScanner.Text()[75:77]
+			MM := fileScanner.Text()[77:79]
+			SS := fileScanner.Text()[79:81]
 			sss := fileScanner.Text()[81:84]
-			i, _ := strconv.Atoi(mm)
-			i = i + 2
+			i, _ := strconv.Atoi(SS)
+			i = i + 6
 			if i >= 60 {
-				mm = fileScanner.Text()[75:77]
-				sss = "999"
+				l, _ := strconv.Atoi(MM)
+				l = l + 1
+				MM = strconv.Itoa(l)
+				if len(MM) < 2 {
+					MM = "0" + MM
+				}
+				SS = strconv.Itoa(i - 60)
+				if len(SS) < 2 {
+					SS = "0" + SS
+				}
 			} else {
-				mm = strconv.Itoa(i)
-				if len(mm) < 2 {
-					mm = "0" + mm
+				SS = strconv.Itoa(i)
+				if len(SS) < 2 {
+					SS = "0" + SS
 				}
 				sss = "000"
 			}
-			temp.ttime = fileScanner.Text()[75:77] + ":" + fileScanner.Text()[77:79] + ":" + mm + "." + sss
+			temp.ttime = HH + ":" + MM + ":" + SS + "." + sss
 			temp.data = "55688|" + temp.ttime + "|" + fileScanner.Text()
 		} else if len(fileScanner.Text()) == 162 { //emst委託
-			mm := fileScanner.Text()[75:77]
+			HH := fileScanner.Text()[71:73]
+			MM := fileScanner.Text()[73:75]
+			SS := fileScanner.Text()[75:77]
 			sss := fileScanner.Text()[77:80]
-			i, _ := strconv.Atoi(mm)
-			i = i + 1
+			i, _ := strconv.Atoi(SS)
+			i = i + 5
 			if i >= 60 {
-				mm = fileScanner.Text()[75:77]
-				sss = "999"
+				l, _ := strconv.Atoi(MM)
+				l = l + 1
+				MM = strconv.Itoa(l)
+				if len(MM) < 2 {
+					MM = "0" + MM
+				}
+				SS = strconv.Itoa(i - 60)
+				if len(SS) < 2 {
+					SS = "0" + SS
+				}
 			} else {
-				mm = strconv.Itoa(i)
-				if len(mm) < 2 {
-					mm = "0" + mm
+				SS = strconv.Itoa(i)
+				if len(SS) < 2 {
+					SS = "0" + SS
 				}
 				sss = "000"
 			}
-			temp.ttime = fileScanner.Text()[71:73] + ":" + fileScanner.Text()[73:75] + ":" + mm + "." + sss
+			temp.ttime = HH + ":" + MM + ":" + SS + "." + sss
 			temp.data = "55688|" + temp.ttime + "|" + fileScanner.Text()
 		} else if strings.Contains(fileScanner.Text(), "order") { //Ben
 			qqq := strings.Split(fileScanner.Text(), ",")
