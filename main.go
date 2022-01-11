@@ -92,6 +92,9 @@ func main() {
 				temp.data = "8988 |" + temp.ttime + "|" + fileScanner.Text()
 			}
 		} else if len(fileScanner.Text()) == 108 { //emst成交
+			if fileScanner.Text()[4:5] == "V" {
+				temp.data = ""
+			}
 			HH := fileScanner.Text()[75:77]
 			MM := fileScanner.Text()[77:79]
 			SS := fileScanner.Text()[79:81]
@@ -119,6 +122,9 @@ func main() {
 			temp.ttime = HH + ":" + MM + ":" + SS + "." + sss
 			temp.data = "55688|" + temp.ttime + "|" + fileScanner.Text()
 		} else if len(fileScanner.Text()) == 162 { //emst委託
+			if fileScanner.Text()[11:12] == "V" {
+				temp.data = ""
+			}
 			HH := fileScanner.Text()[71:73]
 			MM := fileScanner.Text()[73:75]
 			SS := fileScanner.Text()[75:77]
