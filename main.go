@@ -124,33 +124,37 @@ func main() {
 		} else if len(fileScanner.Text()) == 162 { //emst委託
 			if fileScanner.Text()[11:12] == "V" {
 				temp.data = ""
-			}
-			HH := fileScanner.Text()[71:73]
-			MM := fileScanner.Text()[73:75]
-			SS := fileScanner.Text()[75:77]
-			sss := fileScanner.Text()[77:80]
-			i, _ := strconv.Atoi(SS)
-			i = i + 5
-			if i >= 60 {
-				l, _ := strconv.Atoi(MM)
-				l = l + 1
-				MM = strconv.Itoa(l)
-				if len(MM) < 2 {
-					MM = "0" + MM
-				}
-				SS = strconv.Itoa(i - 60)
-				if len(SS) < 2 {
-					SS = "0" + SS
-				}
+			} else if fileScanner.Text()[84:85] == "E" {
+				temp.data = "風控Error:" + fileScanner.Text()
+				fmt.Println(temp.data)
 			} else {
-				SS = strconv.Itoa(i)
-				if len(SS) < 2 {
-					SS = "0" + SS
+				HH := fileScanner.Text()[71:73]
+				MM := fileScanner.Text()[73:75]
+				SS := fileScanner.Text()[75:77]
+				sss := fileScanner.Text()[77:80]
+				i, _ := strconv.Atoi(SS)
+				i = i + 5
+				if i >= 60 {
+					l, _ := strconv.Atoi(MM)
+					l = l + 1
+					MM = strconv.Itoa(l)
+					if len(MM) < 2 {
+						MM = "0" + MM
+					}
+					SS = strconv.Itoa(i - 60)
+					if len(SS) < 2 {
+						SS = "0" + SS
+					}
+				} else {
+					SS = strconv.Itoa(i)
+					if len(SS) < 2 {
+						SS = "0" + SS
+					}
+					sss = "000"
 				}
-				sss = "000"
+				temp.ttime = HH + ":" + MM + ":" + SS + "." + sss
+				temp.data = "55688|" + temp.ttime + "|" + fileScanner.Text()
 			}
-			temp.ttime = HH + ":" + MM + ":" + SS + "." + sss
-			temp.data = "55688|" + temp.ttime + "|" + fileScanner.Text()
 		} else if strings.Contains(fileScanner.Text(), "order") { //Ben
 			qqq := strings.Split(fileScanner.Text(), ",")
 			temp.ttime = qqq[0]
@@ -172,39 +176,113 @@ func main() {
 						temp.流口水號 = www[i][3:]
 					}
 				}
-				mm := temp.ttime[6:8]
+				HH := temp.ttime[0:2]
+				MM := temp.ttime[3:5]
+				SS := temp.ttime[6:8]
 				sss := temp.ttime[9:]
-				i, _ := strconv.Atoi(mm)
-				i = i + 1
-				if i >= 60 {
-					mm = temp.ttime[6:8]
-					sss = "999"
-				} else {
-					mm = strconv.Itoa(i)
-					if len(mm) < 2 {
-						mm = "0" + mm
+				i, _ := strconv.Atoi(sss)
+				i = i + 40
+				if i >= 999 {
+					sss = strconv.Itoa(i - 999)
+					if len(sss) == 2 {
+						sss = "0" + sss
+					} else if len(sss) == 1 {
+						sss = "00" + sss
 					}
-					sss = temp.ttime[9:]
+
+					l, _ := strconv.Atoi(SS)
+					l = l + 1
+					if l >= 60 {
+						mmm, _ := strconv.Atoi(MM)
+						mmm = mmm + 1
+						MM = strconv.Itoa(mmm)
+						if mmm >= 60 {
+							hh, _ := strconv.Atoi(HH)
+							hh = hh + 1
+							HH = strconv.Itoa(hh)
+							if len(HH) < 2 {
+								HH = "0" + HH
+							}
+							MM = strconv.Itoa(mmm - 60)
+						}
+						if len(MM) < 2 {
+							MM = "0" + MM
+						}
+						SS = strconv.Itoa(l - 60)
+						if len(SS) < 2 {
+							SS = "0" + SS
+						}
+					} else {
+						SS = strconv.Itoa(l)
+						if len(SS) < 2 {
+							SS = "0" + SS
+						}
+					}
+				} else {
+					sss = strconv.Itoa(i)
+					if len(sss) == 2 {
+						sss = "0" + sss
+					} else if len(sss) == 1 {
+						sss = "00" + sss
+					}
 				}
-				temp.ttime = temp.ttime[0:5] + ":" + mm + "." + sss
+				temp.ttime = HH + ":" + MM + ":" + SS + "." + sss
+				//fmt.Println(">>>>>>", temp.ttime)
 				temp.data = "55689|" + temp.ttime + "|" + ooo[2][:長度-8]
 				temp.data = strings.ReplaceAll(temp.data, "body為:", "")
 			} else if ooo[1] == "TMP_O" || ooo[1] == "TMP_T" {
-				mm := temp.ttime[6:8]
+				HH := temp.ttime[0:2]
+				MM := temp.ttime[3:5]
+				SS := temp.ttime[6:8]
 				sss := temp.ttime[9:]
-				i, _ := strconv.Atoi(mm)
-				i = i + 2
-				if i >= 60 {
-					mm = temp.ttime[6:8]
-					sss = "999"
-				} else {
-					mm = strconv.Itoa(i)
-					if len(mm) < 2 {
-						mm = "0" + mm
+				i, _ := strconv.Atoi(sss)
+				i = i + 45
+				if i >= 999 {
+					sss = strconv.Itoa(i - 999)
+					if len(sss) == 2 {
+						sss = "0" + sss
+					} else if len(sss) == 1 {
+						sss = "00" + sss
 					}
-					sss = temp.ttime[9:]
+
+					l, _ := strconv.Atoi(SS)
+					l = l + 1
+					if l >= 60 {
+						mmm, _ := strconv.Atoi(MM)
+						mmm = mmm + 1
+						MM = strconv.Itoa(mmm)
+						if mmm >= 60 {
+							hh, _ := strconv.Atoi(HH)
+							hh = hh + 1
+							HH = strconv.Itoa(hh)
+							if len(HH) < 2 {
+								HH = "0" + HH
+							}
+							MM = strconv.Itoa(mmm - 60)
+						}
+						if len(MM) < 2 {
+							MM = "0" + MM
+						}
+						SS = strconv.Itoa(l - 60)
+						if len(SS) < 2 {
+							SS = "0" + SS
+						}
+					} else {
+						SS = strconv.Itoa(l)
+						if len(SS) < 2 {
+							SS = "0" + SS
+						}
+					}
+				} else {
+					sss = strconv.Itoa(i)
+					if len(sss) == 2 {
+						sss = "0" + sss
+					} else if len(sss) == 1 {
+						sss = "00" + sss
+					}
 				}
-				temp.ttime = temp.ttime[0:5] + ":" + mm + "." + sss
+				temp.ttime = HH + ":" + MM + ":" + SS + "." + sss
+				//fmt.Println(">>>>>>", temp.ttime)
 				temp.data = "55690|" + temp.ttime + "|" + ooo[2]
 			}
 		} else if len(fileScanner.Text()) > 100 && fileScanner.Text()[84:85] == "E" {
