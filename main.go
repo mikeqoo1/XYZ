@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type 原始資料 struct {
@@ -62,6 +63,11 @@ func main() {
 	合併檔案(out, EMST委託)
 	Want, _ := os.Open("File/wamt.log")
 	合併檔案(out, Want)
+	盤中, _ := os.Open("File/盤中異動")
+	合併檔案(out, 盤中)
+	//去236 /home/Projects/file 執行 rename 01110105 01110118 *.TXT.*
+	//去236 /home/Projects/file 執行 sed -e 's/01110105/01110118/g' *
+
 	out.Close()
 
 	//這邊要重新開檔 因為上面我只設定寫的權限 func NewScanner 要讀
@@ -73,32 +79,48 @@ func main() {
 	// read line by line
 	for fileScanner.Scan() {
 		var temp 原始資料
-		if strings.Contains(fileScanner.Text(), "stock_id") {
+		month := time.Now().Month()
+		day := time.Now().Day()
+		資料內容 := fileScanner.Text()
+		if strings.Contains(fileScanner.Text(), "20220105") {
+			std := fmt.Sprintf("2022%02d%02d", int(month), day)
+			資料內容 = strings.Replace(fileScanner.Text(), "20220105", std, -1)
+		}
+		if strings.Contains(fileScanner.Text(), "01110105") {
+			std := fmt.Sprintf("0111%02d%02d", month, day)
+			資料內容 = strings.Replace(fileScanner.Text(), "01110105", std, -1)
+		}
+		if strings.Contains(fileScanner.Text(), "1110105") {
+			std := fmt.Sprintf("111%02d%02d", month, day)
+			資料內容 = strings.Replace(fileScanner.Text(), "1110105", std, -1)
+		}
+		if strings.Contains(資料內容, "stock_id") {
 			temp.ttime = "000000000"
 			temp.data = ""
-		} else if len(fileScanner.Text()) == 120 { //紀錄電檔案1文長度120(emst)下單
-			動作別 := fileScanner.Text()[10:11]
+		} else if len(資料內容) == 120 { //紀錄電檔案1文長度120(emst)下單
+			動作別 := 資料內容[10:11]
 			if 動作別 == "I" {
-				//temp.ttime = fileScanner.Text()[26:35]
-				temp.ttime = fileScanner.Text()[26:28] + ":" + fileScanner.Text()[28:30] + ":" + fileScanner.Text()[30:32] + "." + fileScanner.Text()[32:35]
-				temp.data = "8988 |" + temp.ttime + "|" + fileScanner.Text()
+				//temp.ttime = 資料內容[26:35]
+				temp.ttime = 資料內容[26:28] + ":" + 資料內容[28:30] + ":" + 資料內容[30:32] + "." + 資料內容[32:35]
+				temp.data = "8988 |" + temp.ttime + "|" + 資料內容
 			} else if 動作別 == "C" || 動作別 == "P" {
-				//fmt.Println(fileScanner.Text()[25:34])
-				temp.ttime = fileScanner.Text()[25:27] + ":" + fileScanner.Text()[27:29] + ":" + fileScanner.Text()[29:31] + "." + fileScanner.Text()[31:34]
-				temp.data = "8988 |" + temp.ttime + "|" + fileScanner.Text()
+				//fmt.Println(資料內容[25:34])
+				temp.ttime = 資料內容[25:27] + ":" + 資料內容[27:29] + ":" + 資料內容[29:31] + "." + 資料內容[31:34]
+				temp.data = "8988 |" + temp.ttime + "|" + 資料內容
+
 			} else if 動作別 == "D" {
-				//temp.ttime = fileScanner.Text()[25:34]
-				temp.ttime = fileScanner.Text()[25:27] + ":" + fileScanner.Text()[27:29] + ":" + fileScanner.Text()[29:31] + "." + fileScanner.Text()[31:34]
-				temp.data = "8988 |" + temp.ttime + "|" + fileScanner.Text()
+				//temp.ttime = 資料內容[25:34]
+				temp.ttime = 資料內容[25:27] + ":" + 資料內容[27:29] + ":" + 資料內容[29:31] + "." + 資料內容[31:34]
+				temp.data = "8988 |" + temp.ttime + "|" + 資料內容
 			}
-		} else if len(fileScanner.Text()) == 108 { //emst成交
-			if fileScanner.Text()[4:5] == "V" {
+		} else if len(資料內容) == 108 { //emst成交
+			if 資料內容[4:5] == "V" {
 				temp.data = ""
 			}
-			HH := fileScanner.Text()[75:77]
-			MM := fileScanner.Text()[77:79]
-			SS := fileScanner.Text()[79:81]
-			sss := fileScanner.Text()[81:84]
+			HH := 資料內容[75:77]
+			MM := 資料內容[77:79]
+			SS := 資料內容[79:81]
+			sss := 資料內容[81:84]
 			i, _ := strconv.Atoi(SS)
 			i = i + 6
 			if i >= 60 {
@@ -120,18 +142,18 @@ func main() {
 				sss = "000"
 			}
 			temp.ttime = HH + ":" + MM + ":" + SS + "." + sss
-			temp.data = "55688|" + temp.ttime + "|" + fileScanner.Text()
-		} else if len(fileScanner.Text()) == 162 { //emst委託
-			if fileScanner.Text()[11:12] == "V" {
+			temp.data = "55688|" + temp.ttime + "|" + 資料內容
+		} else if len(資料內容) == 162 { //emst委託
+			if 資料內容[11:12] == "V" {
 				temp.data = ""
-			} else if fileScanner.Text()[84:85] == "E" {
-				temp.data = "風控Error:" + fileScanner.Text()
+			} else if 資料內容[84:85] == "E" {
+				temp.data = "風控Error:" + 資料內容
 				fmt.Println(temp.data)
 			} else {
-				HH := fileScanner.Text()[71:73]
-				MM := fileScanner.Text()[73:75]
-				SS := fileScanner.Text()[75:77]
-				sss := fileScanner.Text()[77:80]
+				HH := 資料內容[71:73]
+				MM := 資料內容[73:75]
+				SS := 資料內容[75:77]
+				sss := 資料內容[77:80]
 				i, _ := strconv.Atoi(SS)
 				i = i + 5
 				if i >= 60 {
@@ -153,10 +175,10 @@ func main() {
 					sss = "000"
 				}
 				temp.ttime = HH + ":" + MM + ":" + SS + "." + sss
-				temp.data = "55688|" + temp.ttime + "|" + fileScanner.Text()
+				temp.data = "55688|" + temp.ttime + "|" + 資料內容
 			}
-		} else if strings.Contains(fileScanner.Text(), "order") { //Ben
-			qqq := strings.Split(fileScanner.Text(), ",")
+		} else if strings.Contains(資料內容, "order") { //Ben
+			qqq := strings.Split(資料內容, ",")
 			temp.ttime = qqq[0]
 			if qqq[2] == "1t" {
 				temp.data = "3333 |" + temp.ttime + "|" + "\x01" + qqq[3]
@@ -165,8 +187,8 @@ func main() {
 			} else {
 				temp.data = "13335|" + temp.ttime + "|" + "\x01" + qqq[3]
 			}
-		} else if strings.Contains(fileScanner.Text(), "FIX.4.4") || strings.Contains(fileScanner.Text(), "TMP_") {
-			ooo := strings.Split(fileScanner.Text(), ",")
+		} else if strings.Contains(資料內容, "FIX.4.4") || strings.Contains(資料內容, "TMP_") {
+			ooo := strings.Split(資料內容, ",")
 			temp.ttime = ooo[0]
 			if ooo[1] == "FIX_O" || ooo[1] == "FIX_T" {
 				長度 := len(ooo[2])
@@ -180,54 +202,52 @@ func main() {
 				MM := temp.ttime[3:5]
 				SS := temp.ttime[6:8]
 				sss := temp.ttime[9:]
-				i, _ := strconv.Atoi(sss)
-				i = i + 40
-				if i >= 999 {
-					sss = strconv.Itoa(i - 999)
-					if len(sss) == 2 {
-						sss = "0" + sss
-					} else if len(sss) == 1 {
-						sss = "00" + sss
-					}
-
-					l, _ := strconv.Atoi(SS)
-					l = l + 1
-					if l >= 60 {
-						mmm, _ := strconv.Atoi(MM)
-						mmm = mmm + 1
-						MM = strconv.Itoa(mmm)
-						if mmm >= 60 {
-							hh, _ := strconv.Atoi(HH)
-							hh = hh + 1
-							HH = strconv.Itoa(hh)
-							if len(HH) < 2 {
-								HH = "0" + HH
-							}
-							MM = strconv.Itoa(mmm - 60)
-						}
-						if len(MM) < 2 {
-							MM = "0" + MM
-						}
-						SS = strconv.Itoa(l - 60)
-						if len(SS) < 2 {
-							SS = "0" + SS
-						}
-					} else {
-						SS = strconv.Itoa(l)
-						if len(SS) < 2 {
-							SS = "0" + SS
-						}
-					}
-				} else {
-					sss = strconv.Itoa(i)
-					if len(sss) == 2 {
-						sss = "0" + sss
-					} else if len(sss) == 1 {
-						sss = "00" + sss
-					}
-				}
+				// i, _ := strconv.Atoi(sss)
+				// i = i + 40
+				// if i >= 999 {
+				// 	sss = strconv.Itoa(i - 999)
+				// 	if len(sss) == 2 {
+				// 		sss = "0" + sss
+				// 	} else if len(sss) == 1 {
+				// 		sss = "00" + sss
+				// 	}
+				// 	l, _ := strconv.Atoi(SS)
+				// 	l = l + 1
+				// 	if l >= 60 {
+				// 		mmm, _ := strconv.Atoi(MM)
+				// 		mmm = mmm + 1
+				// 		MM = strconv.Itoa(mmm)
+				// 		if mmm >= 60 {
+				// 			hh, _ := strconv.Atoi(HH)
+				// 			hh = hh + 1
+				// 			HH = strconv.Itoa(hh)
+				// 			if len(HH) < 2 {
+				// 				HH = "0" + HH
+				// 			}
+				// 			MM = strconv.Itoa(mmm - 60)
+				// 		}
+				// 		if len(MM) < 2 {
+				// 			MM = "0" + MM
+				// 		}
+				// 		SS = strconv.Itoa(l - 60)
+				// 		if len(SS) < 2 {
+				// 			SS = "0" + SS
+				// 		}
+				// 	} else {
+				// 		SS = strconv.Itoa(l)
+				// 		if len(SS) < 2 {
+				// 			SS = "0" + SS
+				// 		}
+				// 	}
+				// } else {
+				// 	sss = strconv.Itoa(i)
+				// 	if len(sss) == 2 {
+				// 		sss = "0" + sss
+				// 	} else if len(sss) == 1 {
+				// 		sss = "00" + sss
+				// 	}
+				// }
 				temp.ttime = HH + ":" + MM + ":" + SS + "." + sss
-				//fmt.Println(">>>>>>", temp.ttime)
 				temp.data = "55689|" + temp.ttime + "|" + ooo[2][:長度-8]
 				temp.data = strings.ReplaceAll(temp.data, "body為:", "")
 			} else if ooo[1] == "TMP_O" || ooo[1] == "TMP_T" {
@@ -235,75 +255,77 @@ func main() {
 				MM := temp.ttime[3:5]
 				SS := temp.ttime[6:8]
 				sss := temp.ttime[9:]
-				i, _ := strconv.Atoi(sss)
-				i = i + 45
-				if i >= 999 {
-					sss = strconv.Itoa(i - 999)
-					if len(sss) == 2 {
-						sss = "0" + sss
-					} else if len(sss) == 1 {
-						sss = "00" + sss
-					}
-
-					l, _ := strconv.Atoi(SS)
-					l = l + 1
-					if l >= 60 {
-						mmm, _ := strconv.Atoi(MM)
-						mmm = mmm + 1
-						MM = strconv.Itoa(mmm)
-						if mmm >= 60 {
-							hh, _ := strconv.Atoi(HH)
-							hh = hh + 1
-							HH = strconv.Itoa(hh)
-							if len(HH) < 2 {
-								HH = "0" + HH
-							}
-							MM = strconv.Itoa(mmm - 60)
-						}
-						if len(MM) < 2 {
-							MM = "0" + MM
-						}
-						SS = strconv.Itoa(l - 60)
-						if len(SS) < 2 {
-							SS = "0" + SS
-						}
-					} else {
-						SS = strconv.Itoa(l)
-						if len(SS) < 2 {
-							SS = "0" + SS
-						}
-					}
-				} else {
-					sss = strconv.Itoa(i)
-					if len(sss) == 2 {
-						sss = "0" + sss
-					} else if len(sss) == 1 {
-						sss = "00" + sss
-					}
-				}
+				// i, _ := strconv.Atoi(sss)
+				// i = i + 45
+				// if i >= 999 {
+				// 	sss = strconv.Itoa(i - 999)
+				// 	if len(sss) == 2 {
+				// 		sss = "0" + sss
+				// 	} else if len(sss) == 1 {
+				// 		sss = "00" + sss
+				// 	}
+				// 	l, _ := strconv.Atoi(SS)
+				// 	l = l + 1
+				// 	if l >= 60 {
+				// 		mmm, _ := strconv.Atoi(MM)
+				// 		mmm = mmm + 1
+				// 		MM = strconv.Itoa(mmm)
+				// 		if mmm >= 60 {
+				// 			hh, _ := strconv.Atoi(HH)
+				// 			hh = hh + 1
+				// 			HH = strconv.Itoa(hh)
+				// 			if len(HH) < 2 {
+				// 				HH = "0" + HH
+				// 			}
+				// 			MM = strconv.Itoa(mmm - 60)
+				// 		}
+				// 		if len(MM) < 2 {
+				// 			MM = "0" + MM
+				// 		}
+				// 		SS = strconv.Itoa(l - 60)
+				// 		if len(SS) < 2 {
+				// 			SS = "0" + SS
+				// 		}
+				// 	} else {
+				// 		SS = strconv.Itoa(l)
+				// 		if len(SS) < 2 {
+				// 			SS = "0" + SS
+				// 		}
+				// 	}
+				// } else {
+				// 	sss = strconv.Itoa(i)
+				// 	if len(sss) == 2 {
+				// 		sss = "0" + sss
+				// 	} else if len(sss) == 1 {
+				// 		sss = "00" + sss
+				// 	}
+				// }
 				temp.ttime = HH + ":" + MM + ":" + SS + "." + sss
-				//fmt.Println(">>>>>>", temp.ttime)
 				temp.data = "55690|" + temp.ttime + "|" + ooo[2]
 			}
-		} else if len(fileScanner.Text()) > 100 && fileScanner.Text()[84:85] == "E" {
-			temp.data = "風控Error|" + fileScanner.Text()
+		} else if len(資料內容) > 100 && 資料內容[84:85] == "E" {
+			temp.data = "風控Error|" + 資料內容
 			fmt.Println(temp.data)
-		} else if strings.Contains(fileScanner.Text(), "WAMT") {
-			ooo := strings.Split(fileScanner.Text(), ",")
+		} else if strings.Contains(資料內容, "WAMT") {
+			ooo := strings.Split(資料內容, ",")
 			temp.ttime = ooo[0][9:] + ".000"
-			a := strings.Index(fileScanner.Text(), "'")
-			//fmt.Println(strings.Index(fileScanner.Text(), "'"))
-			b := strings.LastIndex(fileScanner.Text(), "'")
-			//fmt.Println(strings.LastIndex(fileScanner.Text(), "'"))
-			ddd := fileScanner.Text()[a+1 : b]
-			//fmt.Println(fileScanner.Text()[a:b])
+			a := strings.Index(資料內容, "'")
+			b := strings.LastIndex(資料內容, "'")
+			ddd := 資料內容[a+1 : b]
 			temp.data = "3306 |" + temp.ttime + "|" + ddd
-			//fmt.Println(temp.ttime)
-			//fmt.Println(temp.data)
+		} else if strings.Contains(資料內容, ".TXT") { //盤中異動
+			temp.ttime = 資料內容[0:5]
+			temp.ttime = temp.ttime + ":00.000"
+			//指令 := "mv /home/Projects/file/" + 資料內容[6:] + "  /home/ftpinstant/"
+			temp.data = "0000 |" + temp.ttime + "|" + 資料內容[6:]
 		} else { //price
-			temp.ttime = fileScanner.Text()[11:19]
+			m_delimiter := "\x01"
+			qqq := strings.Split(資料內容, ",")
+			temp.ttime = 資料內容[11:19]
 			temp.ttime = temp.ttime + ".000"
-			temp.data = "8986 |" + temp.ttime + "|" + fileScanner.Text()
+			stock_id := strings.Replace(qqq[1], "\"", "", -1)
+			電文 := "35=207" + m_delimiter + "55=" + stock_id + m_delimiter + "44=" + qqq[2] + m_delimiter
+			temp.data = "8986 |" + temp.ttime + "|" + 電文
 		}
 		All = append(All, temp)
 	}
