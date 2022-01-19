@@ -323,6 +323,7 @@ func main() {
 			a := strings.Index(資料內容, "'")
 			b := strings.LastIndex(資料內容, "'")
 			ddd := 資料內容[a+1 : b]
+			ddd = strings.Replace(ddd, "\\", "", -1)
 			temp.data = "3306 |" + temp.ttime + "|" + ddd
 		} else if strings.Contains(資料內容, ".TXT") { //盤中異動
 			temp.ttime = 資料內容[0:5]
